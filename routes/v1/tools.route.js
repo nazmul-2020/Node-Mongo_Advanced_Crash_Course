@@ -52,7 +52,8 @@ router.route('/')
    */
 .post(toolsControllers.saveTool);
 
-router.route('/:id').get(viewCount,limiter,toolsControllers.getToolDetail)
+router.route('/:id')
+.get(viewCount,limiter,toolsControllers.getToolDetail)
 .patch(toolsControllers.updateTool)
 .delete(toolsControllers.deleteTool)
 

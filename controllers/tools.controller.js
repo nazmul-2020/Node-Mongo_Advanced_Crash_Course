@@ -1,3 +1,4 @@
+const { ObjectId } = require("mongodb");
 const { getDb } = require("../utils/dbConnect");
 
 let tools = [
@@ -7,27 +8,32 @@ let tools = [
     { id: 4, name: "test" }
 ]
 
-module.exports.getAllTools = (req, res, next) => {
-    // res.download(__dirname + '/tools.controller.js');
-    // res.json({"name":"qaz"})
-    // res.redirect('/login'
+module.exports.getAllTools = async (req, res, next) => {
+    try {
+        const { limit, page } = req.query;
+        const db = getDb();
+        // cursor=> toArray(),forEach()
+        const tool = await db.collection("tools").find()
+            .project({ _id: 0 })
+            .skip(+page * limit).limit(+limit)
+            .toArray();
 
-    const { limit, page } = req.query;
-    console.log(limit, page);
-    res.json(tools)
+        res.status(200).send({ success: true, data: tool });
+    } catch (error) {
+        next(error);
+    }
 }
 
 module.exports.saveTool = async (req, res, next) => {
     try {
         const db = getDb();
         const tool = req.body;
-        const result = await db.collection("tools").insertOne(tools);
+        const result = await db.collection("tools").insertOne(tool);
         console.log(result);
         if (!result) {
             return res.status(400).send({ status: false, error: "Something went wrong" })
         }
-        res.send(`Tool added with id${result.insertedId}`)
-
+        res.send({ success: true, message: `Tool added with id${result.insertedId}` })
 
         /** dunota same 
         if (result.insertedId) {
@@ -38,20 +44,20 @@ module.exports.saveTool = async (req, res, next) => {
     }
 }
 
-module.exports.getToolDetail = (req, res, next) => {
-    const { id } = req.params;
-    // const filter = { _id: id };
-    const foundTool = tools.find(tool => tool.id === Number(id));
-    res.status(200).send({
-        success: true,
-        message: 'Successfully',
-        data: foundTool
-    });
+module.exports.getToolDetail = async (req, res, next) => {
+    try {
+        const db = getDb();
+        const { id } = req.params;
 
-    // res.status(500).send({
-    //     success:false,
-    //     error:"Internal Server Error"
-    // });
+        if(!ObjectId.isValid(id)){
+            return res.status(400).json({success:false,error:"Not a valid tool id"});
+        }
+        const tool = await db.collection("tools").findOne({ _id: ObjectId(id)});
+        res.status(200).json({ success: true, data: tool })
+
+    } catch (error) {
+        next(error);
+    }
 };
 
 module.exports.updateTool = (req, res, next) => {
