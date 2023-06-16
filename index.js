@@ -3,9 +3,10 @@ const cors = require("cors");
 require("dotenv").config();
 const app = express();
 const port = process.env.PORT || 5000;
-const dbConnect = require("./utils/dbConnect");
+// const dbConnect = require("./utils/dbConnect");
 const toolsRouters = require('./routes/v1/tools.route');
 const errHandler = require("./middleware/errorHandler");
+const { connectToServer } = require("./utils/dbConnect");
 // const viewCount = require("./middleware/viewCount");
 
 app.use(cors());
@@ -17,7 +18,18 @@ app.use(express.json());
 // app.use(limiter)
 
 
-dbConnect();
+// dbConnect();
+
+connectToServer((err) => {
+  if (!err) {
+    app.listen(port, () => {
+      console.log(`Example app listening on port ${port}`);
+    });
+  }else{
+    console.log(err);
+  }
+});
+
 
 app.use('/api/v1/tools', toolsRouters);
 
@@ -35,14 +47,12 @@ app.all('*', (req, res) => {
 
 app.use(errHandler);
 
-app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`);
-});
 
 
-process.on('unhandledRejection',(error)=>{
-  console.log(error.name,error.message);
-  app.close(()=>{
+
+process.on('unhandledRejection', (error) => {
+  console.log(error.name, error.message);
+  app.close(() => {
     process.exit(1);
   });
 });
