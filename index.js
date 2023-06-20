@@ -8,6 +8,8 @@ const toolsRouters = require('./routes/v1/tools.route');
 const errHandler = require("./middleware/errorHandler");
 const { connectToServer } = require("./utils/dbConnect");
 // const viewCount = require("./middleware/viewCount");
+const colors = require("colors");
+
 
 app.use(cors());
 app.use(express.json());
@@ -23,7 +25,7 @@ app.use(express.json());
 connectToServer((err) => {
   if (!err) {
     app.listen(port, () => {
-      console.log(`Example app listening on port ${port}`);
+      console.log(`Example app listening on port ${port}`.red.bold);
     });
   }else{
     console.log(err);
